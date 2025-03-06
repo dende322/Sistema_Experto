@@ -1,0 +1,201 @@
+#!pip install clipspy
+import clips
+sistemaExperto= clips.Environment()
+
+sistemaExperto.clear()
+
+#Se crean las plantillas para los Hechos
+templateUsuario = ("(deftemplate usuario"
+    "\n(slot nombre (type STRING))"
+    "\n(slot edad (type INTEGER))"
+    "\n(slot correo (type STRING))"
+"\n)")
+
+templatePregunta = ("(deftemplate pregunta"
+    "\n(slot id (type INTEGER))"
+    "\n(slot respuesta (type SYMBOL))"
+"\n)")
+
+templateHerramienta = ("(deftemplate herramienta"
+    #"\n(slot id (type INTEGER))"
+    "\n(slot descripcion (type STRING))"
+"\n)")
+
+templatePerfil = ("(deftemplate perfil"
+    "\n(slot tipo (type SYMBOL))"
+"\n)")
+
+templateValor = ("(deftemplate puntuacion"
+    "\n(slot valor (type INTEGER))"
+"\n)")
+
+# se crean los Hechos
+sistemaExperto.build(templateUsuario)
+sistemaExperto.build(templatePregunta)
+sistemaExperto.build(templateHerramienta)
+sistemaExperto.build(templatePerfil)
+sistemaExperto.build(templateValor)
+
+#Se inicia el Hecho puntuacón con valor de 0
+deffactPuntuacion = ("(deffacts inicializacion"+
+    "\n(puntuacion (valor 0))"+
+"\n)")
+sistemaExperto.build(deffactPuntuacion)
+
+#Funcion que retorna el puntaje de cada pregunta
+funcionAsignarPuntos = ("(deffunction asignar-puntos (?respuesta)"
+    "\n(if (eq ?respuesta a)"
+        "\nthen (return 1)"
+        "\nelse (if (eq ?respuesta b)"
+            "\nthen (return 2)"
+            "\nelse (if (eq ?respuesta c)"
+                "\nthen (return 3)"
+                "\nelse (return 0)"
+            "\n)"
+        "\n)"
+    "\n)"
+"\n)")
+
+sistemaExperto.build(funcionAsignarPuntos)
+
+#Regla para calcular el total (sumatoria) de los puntos de las preguntas
+reglaCalcularPuntos = ("(defrule calcular-puntuacion"
+    "\n(pregunta (id 1) (respuesta ?r1))"
+    "\n(pregunta (id 2) (respuesta ?r2))"
+    "\n(pregunta (id 3) (respuesta ?r3))"
+    "\n(pregunta (id 4) (respuesta ?r4))"
+    "\n(pregunta (id 5) (respuesta ?r5))"
+"\n=>"
+    "\n(bind ?nueva-puntuacion (+ (asignar-puntos ?r1) (asignar-puntos ?r2) (asignar-puntos ?r3) (asignar-puntos ?r4) (asignar-puntos ?r5)))"
+    "\n(assert (puntuacion (valor ?nueva-puntuacion)))"
+"\n)")
+
+sistemaExperto.build(reglaCalcularPuntos)
+
+#Se crean las reglas con respecto a la asignación del perfil
+reglaPerfilConservador = ("(defrule perfil-conservador"
+    "\n(puntuacion (valor ?p&:(>= ?p 5)&:(<= ?p 8)))"
+"\n=>"
+    "\n(assert (perfil (tipo Conservador)))"
+"\n)")
+
+reglaPerfilModerado = ("(defrule perfil-moderado"
+    "\n(puntuacion (valor ?p&:(>= ?p 9)&:(<= ?p 12)))"
+"\n=>"
+    "\n(assert (perfil (tipo Moderado)))"
+"\n)")
+
+reglaPerfilAgresivo = ("(defrule perfil-agresivo"
+    "\n(puntuacion (valor ?p&:(>= ?p 13)&:(<= ?p 15)))"
+"\n=>"
+    "\n(assert (perfil (tipo Agresivo)))"
+"\n)")
+
+sistemaExperto.build(reglaPerfilConservador)
+sistemaExperto.build(reglaPerfilModerado)
+sistemaExperto.build(reglaPerfilAgresivo)
+
+#Se crean las reglas con respecto a la asignación de la herramientas financieras
+#recomendadas al usuario
+reglaHerramientasConservador = ("(defrule herramientas-conservador"
+    "\n(perfil(tipo Conservador))"
+"\n=>"
+    "\n(assert (herramienta (descripcion \"Bonos publicos o privados\")))"
+    "\n(assert (herramienta (descripcion \"Cuentas de ahorro\")))"
+    "\n(assert (herramienta (descripcion \"Pagare\")))"
+    "\n(assert (herramienta (descripcion \"Titulos de deuda\")))"
+    "\n(assert (herramienta (descripcion \"Depósitos a largo plazo\")))"
+"\n)")
+
+reglaHerramientasModerado = ("(defrule herramientas-moderado"
+    "\n(perfil(tipo Moderado))"
+"\n=>"
+    "\n(assert (herramienta (descripcion \"Bonos publicos o privados\")))"
+    "\n(assert (herramienta (descripcion \"Acciones de empresas\")))"
+    "\n(assert (herramienta (descripcion \"CDT\")))"
+"\n)")
+
+reglaHerramientasAgresivo = ("(defrule herramientas-agresivo"
+    "\n(perfil(tipo Agresivo))"
+"\n=>"
+    "\n(assert (herramienta (descripcion \"Acciones de empresas\")))"
+    "\n(assert (herramienta (descripcion \"Portafolios diversificadores a largo plazo\")))"
+"\n)")
+
+sistemaExperto.build(reglaHerramientasConservador)
+sistemaExperto.build(reglaHerramientasModerado)
+sistemaExperto.build(reglaHerramientasAgresivo)
+
+for r in sistemaExperto.rules():
+  print(r)
+  print("\n")
+
+print("!Hola!"
+"\nPara empezar necesitamos que ingrese la siguiente uinformacion:\n")
+
+nombre =input("Nombre: ")
+edad = int(input("Edad: "))
+correo = input("Correo: ")
+
+sistemaExperto.assert_string(f"(usuario (nombre \"{nombre}\") (edad {edad}) (correo \"{correo}\"))")
+
+print("!Genial"
+"\nContinuemos, en este momento se presentarán una serie de preguntas"
+"\ningresa la letra de la pregunta con la cual te identifiques")
+
+print("\n")
+ToleranciaAlRiesgo = input("1. ¿Cómo percibes tu tolerancia al riego?"
+"\n\ta). Prefiero no correr riesgos, incluso si eso significa obtener rendimientos bajos."
+"\n\tb). Estoy dispuesto a asumir un riesgo moderado para obtener rendimientos equilibrados."
+"\n\tc). Estoy dispuesto a asumir un alto riesgo para obtener rendimientos potencialmente altos.\n\n\t")
+
+print("\n")
+Temporalidad = input("2. ¿Cuál sería el tiempo de tu inversión ideal?"
+"\n\ta). Menos de 1 año."
+"\n\tb). Entre 1 y 5 años"
+"\n\tc). Más de 5 años.\n\n\t")
+
+print("\n")
+ObjetivoFinanciero = input("3. ¿Cual es el pricipal objetivo de tu inversón?"
+"\n\ta). Preservar mi capital y evitar pérdidas."
+"\n\tb). Obtener un crecimiento moderado de mi inversión."
+"\n\tc) Maximizar el crecimiento de mi inversión, incluso si eso implica mayor riesgo.\n\n\t")
+
+print("\n")
+ConocimientoFinanciero = input("4. ¿Posees algún conocimiento o experiencia con respecto al mundo de las inversiones?"
+"\n\ta). Tengo poco o ningún conocimiento sobre inversiones."
+"\n\tb). Tengo un conocimiento básico y he invertido en productos simples."
+"\n\tc). Tengo experiencia invirtiendo en productos complejos como acciones o derivados.\n\n\t")
+
+print("\n")
+CapacidadFinanciera = input("5. ¿Cuál sería tu capacidad financiera de inversión?"
+"\n\ta). Solo puedo invertir una pequeña parte de mis ingresos (menos del 10%)."
+"\n\tb). Puedo invertir una parte moderada de mis ingresos (entre 10% y 30%)."
+"\n\tc). Puedo invertir una parte significativa de mis ingresos (más del 30%).\n\n\t")
+
+sistemaExperto.assert_string(f"(pregunta (id 1) (respuesta {ToleranciaAlRiesgo}))")
+sistemaExperto.assert_string(f"(pregunta (id 2) (respuesta {Temporalidad}))")
+sistemaExperto.assert_string(f"(pregunta (id 3) (respuesta {ObjetivoFinanciero}))")
+sistemaExperto.assert_string(f"(pregunta (id 4) (respuesta {ConocimientoFinanciero}))")
+sistemaExperto.assert_string(f"(pregunta (id 5) (respuesta {CapacidadFinanciera}))")
+
+sistemaExperto.run()
+
+tipo_value = ""
+descripcion_value = []
+for fact in sistemaExperto.facts():
+    factString = str(fact)
+    # Check if factString contains "tipo" before splitting to avoid IndexError
+    if "tipo" in factString:
+        # Adjust split to handle potential variations in the string
+        tipo_value = factString.split("(tipo ")[1].split(")")[0]
+    if "descripcion" in factString:
+        descripcion_value.append(factString.split("(descripcion ")[1].split(")")[0])
+
+
+print("Genial tu perfil es " + tipo_value + " por lo cual te recomendamos las siguientes herramientas: \n")
+for descripcion in descripcion_value:
+  print(descripcion)
+
+#Reinicia los Hechos
+#sistemaExperto.reset()
