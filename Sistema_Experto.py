@@ -219,7 +219,7 @@ def GenerarInforme(descripcion_value, puntos):
     ttk.Label(Result_frame, text="Sr/ Sra " + nombre.get() + ", a continuación se presenta tu Informe:", background='#c6c6c6').grid(column=0, row=0, columnspan=5, sticky=W, pady=(10, 0))
     ttk.Label(Result_frame, text="Perfil:", background='#c6c6c6').grid(column=0, row=1, sticky=E, pady=(0, 10))
     ttk.Label(Result_frame, textvariable=tipo, background='#c6c6c6').grid(column=1, row=1, columnspan=2, sticky=W, pady=(0, 10))
-    ttk.Label(Result_frame, text="Perfil nomalizado (Escala de 0 a 10):", background='#c6c6c6').grid(column=0, row=2, columnspan=2, sticky=W, pady=(0, 10))
+    ttk.Label(Result_frame, text="Perfil normalizado (Escala de 0 a 10):", background='#c6c6c6').grid(column=0, row=2, columnspan=2, sticky=W, pady=(0, 10))
     ttk.Label(Result_frame, text=Puntaje_Normalizado, background='#c6c6c6').grid(column=2, row=2, sticky=E, pady=(0, 10))
     ttk.Label(Result_frame, text="Las opciones de inversión recomendadas son:", background='#c6c6c6').grid(column=0, row=3, columnspan=4, sticky=W, pady=(0, 10))
     contador = 0
@@ -263,7 +263,7 @@ def Interface_Grafica():
     nombre_Entry.grid(column=1, row=4, pady=(10, 0))
     #Preguntas
     #Pregunta 1
-    ttk.Label(Canvas_frame, text="1. ¿Cómo percibes tu tolerancia al riego?").grid(column=0, row=5, columnspan=5, sticky=W, padx=10)
+    ttk.Label(Canvas_frame, text="1. ¿Cómo percibes tu tolerancia al riego?").grid(column=0, row=5, columnspan=5, sticky=W, padx=10, pady=(20,0))
     Radiobutton(Canvas_frame, 
                 text="a). Prefiero no correr riesgos, incluso si eso significa obtener rendimientos bajos.", 
                 value="a", 
