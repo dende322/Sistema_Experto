@@ -172,7 +172,6 @@ def AsiganarPreguntas():
         
         sistemaExperto.run()
         ObtenerInformacion()
-        bandera = True
 
     except ValueError:
         print(ValueError)
@@ -189,10 +188,12 @@ def ObtenerInformacion():
             tipo_value = factString.split("(tipo ")[1].split(")")[0]
         if "descripcion" in factString:
             descripcion_value.append(factString.split("(descripcion \"")[1].split("\")")[0])
+        if "valor" in factString:
+            puntos = factString.split("(valor ")[1].split(")")[0]
 
     tipo.set(tipo_value)
     herramientas_n.set(len(descripcion_value))
-    GenerarInforme(descripcion_value)
+    GenerarInforme(descripcion_value, puntos)
 
 def LimpiarInformarcion():
     ToleranciaAlRiesgo.set(None)
@@ -203,22 +204,30 @@ def LimpiarInformarcion():
     nombre.set("")
     edad.set(0)
     correo.set("")
-    Result_frame.destroy()
+    for widget in Result_frame.winfo_children():
+        widget.destroy()
     #Reinicia los Hechos
     sistemaExperto.reset()
 
-def GenerarInforme(descripcion_value):
+def GenerarInforme(descripcion_value, puntos):
+    #Normalizamos el puntaje para obtener valores de 0 a 10 incluyendo decimales para el sistema difuzo
+    Puntaje_Normalizado = ((int(puntos)-5)/(15-5))*10
+    #if(bandera):
+    #    Result_frame = ttk.LabelFrame(Canvas_frame, padding="20 10 20 10", style='My.TFrame')
+
     Result_frame.grid(column=1, row=27, columnspan=5, rowspan=10, sticky=(N, W, E, S))
     ttk.Label(Result_frame, text="Sr/ Sra " + nombre.get() + ", a continuación se presenta tu Informe:", background='#c6c6c6').grid(column=0, row=0, columnspan=5, sticky=W, pady=(10, 0))
     ttk.Label(Result_frame, text="Perfil:", background='#c6c6c6').grid(column=0, row=1, sticky=E, pady=(0, 10))
     ttk.Label(Result_frame, textvariable=tipo, background='#c6c6c6').grid(column=1, row=1, columnspan=2, sticky=W, pady=(0, 10))
-    ttk.Label(Result_frame, text="Las opciones de inversión recomendadas son:", background='#c6c6c6').grid(column=0, row=2, columnspan=4, sticky=W, pady=(0, 10))
+    ttk.Label(Result_frame, text="Perfil nomalizado (Escala de 0 a 10):", background='#c6c6c6').grid(column=0, row=2, columnspan=2, sticky=W, pady=(0, 10))
+    ttk.Label(Result_frame, text=Puntaje_Normalizado, background='#c6c6c6').grid(column=2, row=2, sticky=E, pady=(0, 10))
+    ttk.Label(Result_frame, text="Las opciones de inversión recomendadas son:", background='#c6c6c6').grid(column=0, row=3, columnspan=4, sticky=W, pady=(0, 10))
     contador = 0
     while contador < herramientas_n.get():
-        row_ = (3+contador+1)
+        row_ = (4+contador+1)
         ttk.Label(Result_frame, text=descripcion_value[contador], background='#c6c6c6').grid(column=1, row=row_, columnspan=3, sticky=W, pady=(0, 10))
         contador+=1
-
+   
 def Interface_Grafica():
     main_frame.pack(fill=BOTH, expand=1)
     
